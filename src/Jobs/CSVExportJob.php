@@ -61,10 +61,10 @@ class CSVExportJob extends AbstractQueuedJob
 
         // Create folder and protect from public access
         $folder = Folder::find_or_make('CSV Exports');
-        if ($folder->CanViewType !== InheritedPermissions::INHERIT) {
-            $folder->CanViewType = InheritedPermissions::INHERIT;
-            $folder->CanEditType = InheritedPermissions::LOGGED_IN_USERS;
+        if ($folder->CanViewType !== InheritedPermissions::LOGGED_IN_USERS) {
             $folder->protectFile();
+            $folder->CanViewType = InheritedPermissions::LOGGED_IN_USERS;
+            $folder->CanEditType = InheritedPermissions::LOGGED_IN_USERS;
             $folder->write();
         }
 
