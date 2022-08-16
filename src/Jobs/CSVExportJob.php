@@ -2,6 +2,7 @@
 
 namespace Iliain\QueuedExport\Jobs;
 
+use SilverStripe\Core\Extensible;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Core\Environment;
@@ -11,6 +12,8 @@ use SilverStripe\Core\Config\Config;
 
 class CSVExportJob extends AbstractQueuedJob
 {
+    use Extensible;
+
     public function getTitle()
     {
         return 'CSV Export';

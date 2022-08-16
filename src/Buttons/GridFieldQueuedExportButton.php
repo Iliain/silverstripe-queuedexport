@@ -2,6 +2,7 @@
 
 namespace Iliain\QueuedExport\Buttons;
 
+use SilverStripe\Core\Extensible;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Forms\GridField\GridField;
@@ -15,6 +16,8 @@ use Iliain\QueuedExport\Jobs\CSVExportJob;
 
 class GridFieldQueueExportButton extends GridFieldExportButton
 {
+    use Extensible;
+
     public function getHTMLFragments($gridField)
     {
         $button = new GridField_FormAction(
