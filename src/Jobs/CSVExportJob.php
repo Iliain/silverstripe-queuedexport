@@ -5,6 +5,7 @@ namespace Iliain\QueuedExport\Jobs;
 use SilverStripe\Assets\File;
 use SilverStripe\Assets\Folder;
 use SilverStripe\Core\Environment;
+use SilverStripe\Security\InheritedPermissions;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
 
 class CSVExportJob extends AbstractQueuedJob
@@ -58,7 +59,14 @@ class CSVExportJob extends AbstractQueuedJob
         $data = $this->generateExportFileData($fileName);
         $this->currentStep += 1;
 
+        // Create folder and protect from public access
         $folder = Folder::find_or_make('CSV Exports');
+        if ($folder->CanViewType !== InheritedPermissions::INHERIT) {
+            $folder->CanViewType = InheritedPermissions::INHERIT;
+            $folder->CanEditType = InheritedPermissions::LOGGED_IN_USERS;
+            $folder->protectFile();
+            $folder->write();
+        }
 
         $file = File::create();
         $file->setFromString($data, $fileName);
