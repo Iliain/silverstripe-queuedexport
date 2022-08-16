@@ -1,0 +1,24 @@
+{
+    "name": "iliain/silverstripe-queuedexport",
+    "type": "silverstripe-vendormodule",
+    "description": "Provides a GridField button to queue the export to a CSV, good for handling large datasets",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "silverstripe",
+        "modular",
+        "cms",
+        "queued",
+        "export"
+    ],
+    "homepage": "http://github.com/Iliain/silverstripe-queuedexport",
+    "require": {
+        "php": "^7",
+        "silverstripe/framework": "^4.0",
+        "symbiote/silverstripe-queuedjobs": "^4.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Iliain\\QueuedExport\\": "src/"
+        }
+    }
+}
