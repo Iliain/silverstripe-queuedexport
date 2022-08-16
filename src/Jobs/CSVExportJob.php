@@ -7,6 +7,7 @@ use SilverStripe\Assets\Folder;
 use SilverStripe\Core\Environment;
 use SilverStripe\Security\InheritedPermissions;
 use Symbiote\QueuedJobs\Services\AbstractQueuedJob;
+use SilverStripe\Core\Config\Config;
 
 class CSVExportJob extends AbstractQueuedJob
 {
@@ -28,22 +29,17 @@ class CSVExportJob extends AbstractQueuedJob
         $this->csvSeparator = $csvSeparator;
     }
 
-    public function setTempFile($fileName): void
-    {
-        $this->tempFile = $fileName;
-    }
-
-    public function getTempFile($fileName): string
-    {
-        return $this->tempFile;
-    }
-
     public function process(): void
     {
-        Environment::increaseMemoryLimitTo();
-        Environment::increaseTimeLimitTo();
+        $extendMemory = Config::inst()->get(CSVExportJob::class, 'increase_memory_limit');
+        if ($extendMemory) {
+            Environment::increaseMemoryLimitTo();
+            Environment::increaseTimeLimitTo();
+        }
+
         $fileName = $this->getFileName();
         $this->beginExport($fileName);
+
         unlink(TEMP_FOLDER . "$fileName");
         $this->isComplete = true;
     }
@@ -59,21 +55,30 @@ class CSVExportJob extends AbstractQueuedJob
         $data = $this->generateExportFileData($fileName);
         $this->currentStep += 1;
 
-        // Create folder and protect from public access
-        $folder = Folder::find_or_make('CSV Exports');
-        if ($folder->CanViewType !== InheritedPermissions::LOGGED_IN_USERS) {
-            $folder->protectFile();
-            $folder->CanViewType = InheritedPermissions::LOGGED_IN_USERS;
-            $folder->CanEditType = InheritedPermissions::LOGGED_IN_USERS;
-            $folder->write();
+        $folder = null;
+        $this->extend('updateFolder', $folder); // Bypass automatic folder creation and specify a folder yourself
+
+        if (!$folder || !$folder->exists()) {
+            // Create folder and protect from public access
+            $folderDirectory = Config::inst()->get(CSVExportJob::class, 'storage_directory');
+
+            $folder = Folder::find_or_make($folderDirectory);
+            if ($folder->CanViewType !== InheritedPermissions::LOGGED_IN_USERS) {
+                $folder->protectFile();
+                $folder->CanViewType = InheritedPermissions::LOGGED_IN_USERS;
+                $folder->CanEditType = InheritedPermissions::LOGGED_IN_USERS;
+                $folder->write();
+            }
         }
 
         $file = File::create();
         $file->setFromString($data, $fileName);
 
+        $this->extend('updateFileName', $fileName); // Set the filename in the CMS manually
+
         $file->Title = $fileName;
         $file->ParentID = $folder->ID;
-        $file->writeToStage('Live');
+        $file->writeToStage('Live'); // Set to Live allows the file to be downloaded on click
         $this->currentStep += 1;
     }
 
@@ -83,6 +88,7 @@ class CSVExportJob extends AbstractQueuedJob
         $csvColumns = $this->columns;
 
         $csvFile = fopen(TEMP_FOLDER . "$fileName", 'w');
+        $this->extend('modifyCSVStart', $csvFile);
 
         // Set headers
         $headers = [];
@@ -95,6 +101,8 @@ class CSVExportJob extends AbstractQueuedJob
         }
         fputcsv($csvFile, $headers);
         unset($headers);
+
+        $this->extend('modifyCSVMiddle', $csvFile);
 
         // Set data
         foreach ($items->limit(null) as $item) {
@@ -131,6 +139,7 @@ class CSVExportJob extends AbstractQueuedJob
             }
         }
 
+        $this->extend('modifyCSVEnd', $csvFile);
         fclose($csvFile);
         return (string)file_get_contents(TEMP_FOLDER . "$fileName");
     }

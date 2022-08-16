@@ -62,14 +62,22 @@ class GridFieldQueueExportButton extends GridFieldExportButton
             }
         }
 
-        $export = new CSVExportJob($items, $this->getExportColumnsForGridField($gridField), $gridField->getModelClass(), $gridField->customDataFields, ',');
+        $csvSeperator = ',';
+        $this->extend('updateCSVSeperator', $csvSeperator);
+
+        $export = new CSVExportJob($items, $this->getExportColumnsForGridField($gridField), $gridField->getModelClass(), $gridField->customDataFields, $csvSeperator);
 
         // Add back the paginator
         $gridField->getConfig()->addComponent(new GridFieldPaginator);
 
+        $scheduledDate = DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp())->Rfc2822();
+        $this->extend('updateScheduledDate', $scheduledDate);
+
         // Queue job
         QueuedJobService::singleton()
-            ->queueJob($export, DBDatetime::create()->setValue(DBDatetime::now()->getTimestamp())->Rfc2822());
+            ->queueJob($export, $scheduledDate);
+
+        $this->extend('updateExportButtonEnd');
 
         // Redirect back
         // @todo implement confirmation message 

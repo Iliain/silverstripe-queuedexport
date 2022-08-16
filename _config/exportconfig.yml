@@ -1,0 +1,6 @@
+---
+Name: exportconfig
+---
+Iliain\QueuedExport\Jobs\CSVExportJob:
+  storage_directory: 'CSV Exports'
+  increase_memory_limit: true
