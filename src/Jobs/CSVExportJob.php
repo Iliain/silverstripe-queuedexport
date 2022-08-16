@@ -73,7 +73,7 @@ class CSVExportJob extends AbstractQueuedJob
 
         $file->Title = $fileName;
         $file->ParentID = $folder->ID;
-        $file->writeToStage('Stage');
+        $file->writeToStage('Live');
         $this->currentStep += 1;
     }
 
