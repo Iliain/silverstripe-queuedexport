@@ -11,6 +11,7 @@ use SilverStripe\Forms\GridField\GridField_FormAction;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\GridField\GridFieldSortableHeader;
+use Iliain\QueuedExport\Jobs\CSVExportJob;
 
 class GridFieldQueueExportButton extends GridFieldExportButton
 {
