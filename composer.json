@@ -1,6 +1,6 @@
 {
     "name": "iliain/silverstripe-queuedexport",
-    "type": "silverstripe-vendormodule",
+    "type": "silverstripe-module",
     "description": "Provides a GridField button to queue the export to a CSV, good for handling large datasets",
     "license": "BSD-3-Clause",
     "keywords": [
